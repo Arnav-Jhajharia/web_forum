@@ -13,8 +13,8 @@ Rails.application.routes.draw do
       get "categories/index"
       get "categories/show"
       # Authentication routes
-      post 'auth/login', to: 'auth#login'
-      delete 'auth/logout', to: 'auth#logout'
+      post "auth/login", to: "auth#login"
+      delete "auth/logout", to: "auth#logout"
 
       # Categories
       resources :categories, only: [:index, :show]
@@ -34,8 +34,8 @@ Rails.application.routes.draw do
   end
 
   # Root and Frontend Routes
-  root 'homepage#index'
-  get '/*path' => 'homepage#index'
+  root "homepage#index"
+  get "/*path' => 'homepage#index"
 
   # Health Check
   get "up" => "rails/health#show", as: :rails_health_check
