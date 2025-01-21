@@ -274,7 +274,7 @@ DEPENDENCIES
   brakeman
   cssbundling-rails
   debug
-  error_highlight (>= 0.7.0)
+  error_highlight (>= 0.3.0)
   jbuilder
   jsbundling-rails
   jwt
