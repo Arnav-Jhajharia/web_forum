@@ -2,7 +2,6 @@ module Api
   module V1
     class AuthController < ApplicationController
       # Skip CSRF protection for API actions
-      skip_before_action :verify_authenticity_token, only: [:login, :logout]
 
       # POST /api/v1/auth/login
       def login

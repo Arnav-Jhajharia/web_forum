@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Grid, Typography, TextField, Button, Box } from "@mui/material";
 
 interface LoginProps {
@@ -9,6 +10,7 @@ interface LoginProps {
 const LoginPage: React.FC<LoginProps> = ({ setToken }) => {
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!username.trim()) {
@@ -17,11 +19,27 @@ const LoginPage: React.FC<LoginProps> = ({ setToken }) => {
     }
 
     try {
+      // Login API
       const response = await axios.post("/api/v1/auth/login", { username });
       const token = response.data.token;
 
+      // Store token and update state
       localStorage.setItem("token", token);
       setToken(token);
+
+      // Fetch user preferences
+      const preferencesResponse = await axios.get("/api/v1/user_preferences", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const preferences = preferencesResponse.data.preferences;
+
+      // Redirect based on preferences
+      if (!preferences || Object.keys(preferences).length === 0) {
+        navigate("/preferences");
+      } else {
+        navigate("/");
+      }
 
       alert(response.data.message);
     } catch (err: any) {
@@ -45,7 +63,7 @@ const LoginPage: React.FC<LoginProps> = ({ setToken }) => {
       >
         <Box textAlign="center">
           <img
-            src="/icon.png" // Update with the correct path to your logo
+            src="/icon.png"
             alt="Penguin Logo"
             style={{ width: "70%", maxWidth: "300px" }}
           />

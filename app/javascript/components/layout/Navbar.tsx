@@ -1,5 +1,6 @@
-import React from "react";
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import React, { useState } from "react";
+import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 interface NavbarProps {
   isLoggedIn: boolean;
@@ -7,6 +8,21 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleMenuClose();
+    onLogout();
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -25,16 +41,14 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
         }}
       >
         {/* Left Side: Logo */}
-        <Typography
-          variant="h6"
-          component="h1"
-          sx={{
-            fontWeight: "bold",
-            color: "text.primary",
-          }}
-        >
-          Penguin
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <img
+            src="/icon.png" 
+            alt="Penguin Logo"
+            style={{ width: 60, height: 60 }}
+          />
+        
+        </Box>
 
         {/* Center Links */}
         <Box
@@ -46,7 +60,6 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
             flexGrow: 1,
           }}
         >
-          {/* Links (Add when needed) */}
           <Button href="/" color="inherit" sx={{ textTransform: "none" }}>
             Home
           </Button>
@@ -58,34 +71,29 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
           </Button>
         </Box>
 
-        {/* Right Side: Login/Logout */}
+        {/* Right Side: Settings Dropdown */}
         <Box>
-          {isLoggedIn ? (
-            <Button
-              variant="contained"
-              color="error"
-              onClick={onLogout}
-              sx={{
-                textTransform: "none",
-                fontSize: "0.9rem",
-              }}
-            >
-              Logout
-            </Button>
-          ) : (
-            <></>
-            // Add Login Button when needed
-            // <Button
-            //   variant="contained"
-            //   color="primary"
-            //   href="/login"
-            //   sx={{
-            //     textTransform: "none",
-            //     fontSize: "0.9rem",
-            //   }}
-            // >
-            //   Login
-            // </Button>
+          {isLoggedIn && (
+            <>
+              <IconButton
+                onClick={handleMenuOpen}
+                color="inherit"
+                sx={{ textTransform: "none" }}
+              >
+                <SettingsIcon />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                sx={{     boxShadow: "none"
+                }}
+              >
+                <MenuItem onClick={handleMenuClose}>Profile Settings</MenuItem>
+                <MenuItem onClick={handleMenuClose}>Account Settings</MenuItem>
+                <MenuItem sx = {{color:"red"}} onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </>
           )}
         </Box>
       </Toolbar>

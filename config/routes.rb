@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
+  get "users/show"
+  get "users/update"
+  get "users/destroy"
   namespace :api do
     namespace :v1 do
+      get "users/show"
+      get "users/update"
+      get "users/destroy"
       # Authentication routes
       post "auth/login", to: "auth#login"
       delete "auth/logout", to: "auth#logout"
@@ -19,6 +25,10 @@ Rails.application.routes.draw do
 
       # Flags
       resources :flags, only: [:index]
+
+      resource :user_preferences, only: [:show, :update]
+
+      resource :user, only: [:show, :update, :destroy]
     end
   end
 

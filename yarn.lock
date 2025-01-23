@@ -593,6 +593,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/icons-material@npm:^6.4.1":
+  version: 6.4.1
+  resolution: "@mui/icons-material@npm:6.4.1"
+  dependencies:
+    "@babel/runtime": ^7.26.0
+  peerDependencies:
+    "@mui/material": ^6.4.1
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 7b014cb412eb6330b01dbe696fde5b0835f00ee7a66861043e429e0e754bfebee317ca504ecbfc164bffdedf01275b35111c958a353d425999dabe7d891a8947
+  languageName: node
+  linkType: hard
+
 "@mui/joy@npm:^5.0.0-beta.51":
   version: 5.0.0-beta.51
   resolution: "@mui/joy@npm:5.0.0-beta.51"
@@ -1175,6 +1191,7 @@ __metadata:
     "@emotion/styled": ^11.14.0
     "@hotwired/stimulus": ^3.2.2
     "@hotwired/turbo-rails": ^8.0.12
+    "@mui/icons-material": ^6.4.1
     "@mui/joy": ^5.0.0-beta.51
     "@mui/material": ^6.4.0
     "@popperjs/core": ^2.11.8
