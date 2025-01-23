@@ -1,17 +1,6 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      get "flags/index"
-      get "flags/create"
-      get "tags/index"
-      get "tags/show"
-      get "comments/index"
-      get "comments/create"
-      get "forum_threads/index"
-      get "forum_threads/show"
-      get "forum_threads/create"
-      get "categories/index"
-      get "categories/show"
       # Authentication routes
       post "auth/login", to: "auth#login"
       delete "auth/logout", to: "auth#logout"
@@ -35,7 +24,7 @@ Rails.application.routes.draw do
 
   # Root and Frontend Routes
   root "homepage#index"
-  get "/*path' => 'homepage#index"
+  get "/*path" => "homepage#index"
 
   # Health Check
   get "up" => "rails/health#show", as: :rails_health_check
