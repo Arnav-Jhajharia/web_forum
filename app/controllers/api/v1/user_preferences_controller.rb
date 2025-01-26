@@ -1,7 +1,7 @@
 class Api::V1::UserPreferencesController < ApplicationController
 
     before_action :authenticate_user!
-    
+
     def show
       render json: { preferences: current_user.preferences }, status: :ok
     end
@@ -14,4 +14,3 @@ class Api::V1::UserPreferencesController < ApplicationController
       end
     end
   end
-  

@@ -1,33 +1,35 @@
 Rails.application.routes.draw do
-  get "users/show"
-  get "users/update"
-  get "users/destroy"
   namespace :api do
     namespace :v1 do
-      get "users/show"
-      get "users/update"
-      get "users/destroy"
       # Authentication routes
       post "auth/login", to: "auth#login"
       delete "auth/logout", to: "auth#logout"
 
       # Categories
-      resources :categories, only: [:index, :show]
+      resources :categories, only: [:index, :show, :create] do
+        # Nested routes for threads under categories
+        resources :forum_threads, only: [:index, :create] # Index for threads in a category
+      end
 
-      # Forum Threads with nested comments and flags
-      resources :forum_threads do
-        resources :comments, only: [:index, :create, :destroy]
-        resources :flags, only: [:create]
+      # Forum Threads
+      resources :forum_threads, only: [:show, :update, :destroy] do
+        # Nested routes for comments under threads
+        resources :comments, only: [:create, :destroy]
+
+        # Routes for likes and chill votes
+        member do
+          patch :toggle_like
+          patch :toggle_chill
+        end
       end
 
       # Tags
-      resources :tags, only: [:index, :show]
+      resources :tags, only: [:index, :show, :create]
 
-      # Flags
-      resources :flags, only: [:index]
+      # Feed
+      get "feed", to: "feed#index"
 
-      resource :user_preferences, only: [:show, :update]
-
+      # User profile
       resource :user, only: [:show, :update, :destroy]
     end
   end

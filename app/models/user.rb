@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_many :reactions, dependent: :destroy
   validates :username, presence: true, uniqueness: true
   validates :email, 
     uniqueness: { allow_blank: true },

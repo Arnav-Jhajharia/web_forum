@@ -5,7 +5,21 @@ module Api
       before_action :authenticate_user!
 
       def show
-        render json: @current_user
+        render json: @current_user.as_json(
+          include: {
+            forum_threads: { only: [:id, :title, :content, :created_at] },
+            comments: {
+              only: [:id, :content, :created_at, :thread_id],
+              include: {
+                forum_thread: { only: [:title] }
+              }
+            }
+          }
+        ).merge(
+          comments: @current_user.comments.map { |c| 
+            c.as_json.merge(thread_title: c.forum_thread.title) 
+          }
+        )
       end
 
       # PATCH/PUT /api/v1/user

@@ -1,6 +1,7 @@
+
 class Category < ApplicationRecord
-    validates :name, presence: true, uniqueness: true
+  has_many :forum_threads, dependent: :destroy
   
-    has_many :forum_threads, dependent: :destroy
-  end
-  
+  validates :name, presence: true, uniqueness: true
+  validates :description, length: { maximum: 500 }
+end

@@ -1,25 +1,75 @@
-# Categories
-Category.create(name: "General")
-Category.create(name: "Technology")
-Category.create(name: "Gaming")
+# db/seeds.rb
 
-# Users
-User.create(username: "testuser")
-User.create(username: "admin")
+puts "Clearing existing data..."
+Tag.destroy_all
+Comment.destroy_all
+ForumThread.destroy_all
+Category.destroy_all
+User.destroy_all
 
-# Forum Threads
-ForumThread.create(title: "Welcome to the Forum!", content: "This is the first thread.", user_id: 1, category_id: 1)
-ForumThread.create(title: "What's your favorite tech?", content: "Discuss here!", user_id: 2, category_id: 2)
+puts "Creating Users..."
+user1 = User.create!(
+  username: "alice",
+  email: "alice@example.com",
+  name: "Alice Wonderland",
+  preferences: {
+    categories: [1, 2, 5],  # The user’s preferred category IDs (will map below)
+    tags: ["Ruby", "React"],
+    notifications: { push: true }
+  }
+)
 
-# Comments
-Comment.create(content: "Great topic!", user_id: 1, forum_thread_id: 1)
-Comment.create(content: "I love gaming discussions!", user_id: 2, forum_thread_id: 1)
+user2 = User.create!(
+  username: "bob",
+  email: "bob@example.com",
+  name: "Bob Builder",
+  preferences: {
+    categories: [3, 7],
+    tags: ["JavaScript"],
+    notifications: { push: false }
+  }
+)
 
-# Tags
-Tag.create(name: "Ruby")
-Tag.create(name: "React")
-Tag.create(name: "Gaming")
+puts "Creating Categories..."
+# Let’s make 10 categories
+category_data = [
+  { name: "General Discussion", description: "Talk about anything" },
+  { name: "Programming", description: "Coding & Software Development" },
+  { name: "Music", description: "Discuss all genres & instruments" },
+  { name: "Sports", description: "Football, Cricket, Baseball, etc." },
+  { name: "Travel", description: "Share travel experiences & tips" },
+  { name: "Fitness", description: "Workout and healthy lifestyle" },
+  { name: "Cooking", description: "Recipes and cooking tips" },
+  { name: "Movies", description: "Discuss the latest films and classics" },
+  { name: "Gaming", description: "Video games and board games" },
+  { name: "Art", description: "Painting, sculpture, and design" }
+]
 
-# Flags
-Flag.create(reason: "Spam", user_id: 1, flaggable: ForumThread.first)
-Flag.create(reason: "Inappropriate", user_id: 2, flaggable: Comment.first)
+category_data.each do |cat|
+  Category.create!(cat)
+end
+
+puts "Creating Tags..."
+tag_names = %w[Ruby Rails React Vue JavaScript TypeScript Java Python TravelTips Recipes SportsTalk FitnessGoals MovieReview]
+tag_names.each do |name|
+  Tag.create!(name: name)
+end
+
+puts "Creating Threads..."
+# Create random threads in random categories
+categories = Category.all
+10.times do
+  cat = categories.sample
+  user = [user1, user2].sample
+
+  ForumThread.create!(
+    title: "Discussion on #{cat.name}",
+    content: "Some interesting thoughts about #{cat.name}. Generated for feed testing (#{rand(1000)}).",
+    mood: ForumThread.moods.keys.sample, # random mood
+    user: user,
+    category: cat,
+    tag_list: tag_names.sample(2).join(",")
+  )
+end
+
+puts "Seeding complete!"

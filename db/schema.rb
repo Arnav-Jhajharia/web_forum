@@ -10,12 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_01_23_114931) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_24_120001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "categories", force: :cascade do |t|
     t.string "name", null: false
+    t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_categories_on_name", unique: true
@@ -23,43 +24,48 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_23_114931) do
 
   create_table "comments", force: :cascade do |t|
     t.text "content", null: false
+    t.integer "mood", default: 0
+    t.bigint "parent_id"
     t.bigint "user_id", null: false
     t.bigint "forum_thread_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["forum_thread_id"], name: "index_comments_on_forum_thread_id"
+    t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
-  end
-
-  create_table "flags", force: :cascade do |t|
-    t.string "flaggable_type", null: false
-    t.bigint "flaggable_id", null: false
-    t.bigint "user_id", null: false
-    t.string "reason", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["flaggable_type", "flaggable_id"], name: "index_flags_on_flaggable"
-    t.index ["user_id"], name: "index_flags_on_user_id"
-  end
-
-  create_table "forum_thread_tags", force: :cascade do |t|
-    t.bigint "forum_thread_id", null: false
-    t.bigint "tag_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["forum_thread_id"], name: "index_forum_thread_tags_on_forum_thread_id"
-    t.index ["tag_id"], name: "index_forum_thread_tags_on_tag_id"
   end
 
   create_table "forum_threads", force: :cascade do |t|
     t.string "title", null: false
     t.text "content", null: false
+    t.integer "mood", default: 0
     t.bigint "user_id", null: false
     t.bigint "category_id", null: false
+    t.text "tag_list"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "likes_count", default: 0, null: false
+    t.integer "chill_votes_count", default: 0, null: false
     t.index ["category_id"], name: "index_forum_threads_on_category_id"
     t.index ["user_id"], name: "index_forum_threads_on_user_id"
+  end
+
+  create_table "forum_threads_tags", id: false, force: :cascade do |t|
+    t.bigint "forum_thread_id", null: false
+    t.bigint "tag_id", null: false
+    t.index ["forum_thread_id", "tag_id"], name: "index_forum_threads_tags_on_forum_thread_id_and_tag_id", unique: true
+    t.index ["tag_id", "forum_thread_id"], name: "index_forum_threads_tags_on_tag_id_and_forum_thread_id"
+  end
+
+  create_table "reactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "forum_thread_id", null: false
+    t.string "reaction_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["forum_thread_id"], name: "index_reactions_on_forum_thread_id"
+    t.index ["user_id", "forum_thread_id", "reaction_type"], name: "index_reactions_on_user_forum_thread_type", unique: true
+    t.index ["user_id"], name: "index_reactions_on_user_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -84,11 +90,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_23_114931) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "comments", "comments", column: "parent_id"
   add_foreign_key "comments", "forum_threads"
   add_foreign_key "comments", "users"
-  add_foreign_key "flags", "users"
-  add_foreign_key "forum_thread_tags", "forum_threads"
-  add_foreign_key "forum_thread_tags", "tags"
   add_foreign_key "forum_threads", "categories"
   add_foreign_key "forum_threads", "users"
+  add_foreign_key "reactions", "forum_threads"
+  add_foreign_key "reactions", "users"
 end

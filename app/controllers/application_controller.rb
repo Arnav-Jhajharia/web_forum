@@ -5,7 +5,7 @@
     skip_before_action :verify_authenticity_token
 
 
-
+    private
   
     def authenticate_user!
       token = request.headers["Authorization"]&.split(" ")&.last

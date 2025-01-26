@@ -4,6 +4,11 @@ import Login from "../pages/Login";
 import Home from "../pages/Home";
 import SetupPreferences from "../pages/Preferences";
 import SettingsPage from "../pages/Settings";
+import ThreadPage from "../pages/ThreadPage";
+import CategoriesPage from '../pages/Categories';
+import CategoryDetailsPage from '../pages/CategoryDetails';
+import ProfilePage from "../pages/Profile"
+
 
 interface AppRoutesProps {
   token: string | null;
@@ -38,7 +43,23 @@ const AppRoutes: React.FC<AppRoutesProps> = ({ token, setToken, logout }) => {
         path="/settings"
         element={token ? <SettingsPage /> : <Navigate to="/login" />}
       />
-    </Routes>
+
+      <Route path="/forum_threads/:id" 
+         element={token ? <ThreadPage /> : <Navigate to="/login" />} />
+
+      <Route path="/categories/:id" 
+         element={token ? <CategoriesPage /> : <Navigate to="/login" />} />
+
+      <Route path="/categories" 
+         element={token ? <CategoriesPage /> : <Navigate to="/login" />} />
+
+      <Route path="/category/:id" 
+         element={token ? <CategoryDetailsPage /> : <Navigate to="/login" />} />
+
+      <Route path="/profile" 
+         element={token ? <ProfilePage /> : <Navigate to="/login" />} />
+        
+      </Routes>
   );
 };
 
