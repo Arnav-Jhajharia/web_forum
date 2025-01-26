@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   IconButton,
+  SpeedDial,
   Button
 } from '@mui/material';
 import { SpeedDial, SpeedDialAction } from '@mui/material';
@@ -170,46 +171,7 @@ const HomePage: React.FC = () => {
       {/* Layout container with Sidebar + Main content */}
       <Box sx={{ display: 'flex' }}>
         {/* LEFT SIDEBAR (fixed/sticky) */}
-        <Box
-          sx={{
-            position: 'sticky',
-            top: 64, // navbar height
-            width: { xs: 70, sm: 200 },
-            height: 'calc(100vh - 64px)', // fill viewport below navbar
-            bgcolor: '#f8f9fa',
-            borderRight: '1px solid #ddd',
-            flexShrink: 0,
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: { xs: 'center', sm: 'flex-start' },
-            gap: 2
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<ExploreIcon />}
-            onClick={() => navigate('/explore')}
-            sx={{
-              display: { xs: 'none', sm: 'flex' },
-              justifyContent: 'flex-start',
-              width: '100%'
-            }}
-          >
-            Explore
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/my_categories')}
-            sx={{
-              display: { xs: 'none', sm: 'flex' },
-              justifyContent: 'flex-start',
-              width: '100%'
-            }}
-          >
-            My Categories
-          </Button>
-        </Box>
+        
 
         {/* MAIN CONTENT: scrollable feed area */}
         <Box

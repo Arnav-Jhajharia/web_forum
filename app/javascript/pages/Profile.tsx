@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   Box,
@@ -13,17 +13,25 @@ import {
   Grid,
   Avatar,
   Chip,
-  Divider,
-  useTheme
+  useTheme,
+  Button,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Comment as CommentIcon,
   DateRange,
   Favorite,
-  Spa
+  Spa,
+  People,
+  PersonAdd,
+  PersonRemove
 } from '@mui/icons-material';
 import Navbar from '../components/layout/Navbar';
+
 interface User {
   id: number;
   name: string;
@@ -31,11 +39,16 @@ interface User {
   email: string;
   bio: string;
   created_at: string;
-  threads: Array<{
+  followers_count: number;
+  following_count: number;
+  is_following?: boolean;
+  forum_threads: Array<{
     id: number;
     title: string;
     content: string;
     created_at: string;
+    likes_count: number;
+    chill_votes_count: number;
   }>;
   comments: Array<{
     id: number;
@@ -47,29 +60,122 @@ interface User {
 }
 
 const ProfilePage: React.FC = () => {
+  const { userId } = useParams();
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'posts' | 'comments'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'followers' | 'following'>('posts');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [followers, setFollowers] = useState<User[]>([]);
+  const [following, setFollowing] = useState<User[]>([]);
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const url = userId ? `/api/v1/users/${userId}` : '/api/v1/user';
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(res.data);
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      setError('Failed to load profile data');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchRelationships = async () => {
+      if (!user) return;
+      
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('/api/v1/user', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(res.data);
+        if (activeTab === 'followers') {
+          const res = await axios.get(`/api/v1/users/${user.id}/followers`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setFollowers(res.data);
+        } else if (activeTab === 'following') {
+          const res = await axios.get(`/api/v1/users/${user.id}/following`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setFollowing(res.data);
+        }
       } catch (err) {
-        console.error('Error fetching profile:', err);
-        setError('Failed to load profile data');
-      } finally {
-        setLoading(false);
+        console.error('Error fetching relationships:', err);
       }
     };
-    fetchProfile();
-  }, []);
+
+    fetchRelationships();
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  const handleFollow = async () => {
+    if (!user) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`/api/v1/users/${user.id}/follow`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(prev => prev ? { 
+        ...prev, 
+        is_following: true, 
+        followers_count: prev.followers_count + 1 
+      } : null);
+    } catch (err) {
+      console.error('Error following user:', err);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!user) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/v1/users/${user.id}/unfollow`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(prev => prev ? { 
+        ...prev, 
+        is_following: false, 
+        followers_count: prev.followers_count - 1 
+      } : null);
+    } catch (err) {
+      console.error('Error unfollowing user:', err);
+    }
+  };
+
+  const renderFollowButton = () => {
+    if (!user || !userId || user.id.toString() === localStorage.getItem('currentUserId')) return null;
+    
+    return user.is_following ? (
+      <Button
+        variant="outlined"
+        color="secondary"
+        startIcon={<PersonRemove />}
+        onClick={handleUnfollow}
+        sx={{ borderRadius: 20, px: 3 }}
+      >
+        Following
+      </Button>
+    ) : (
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<PersonAdd />}
+        onClick={handleFollow}
+        sx={{ borderRadius: 20, px: 3 }}
+      >
+        Follow
+      </Button>
+    );
+  };
 
   if (loading) {
     return (
@@ -122,7 +228,11 @@ const ProfilePage: React.FC = () => {
         {/* Profile Content */}
         <Box sx={{ pt: 8, px: 4, pb: 4 }}>
           {/* Profile Header */}
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Box sx={{ textAlign: 'center', mb: 4, position: 'relative' }}>
+            <Box sx={{ position: 'absolute', right: 0, top: 0 }}>
+              {renderFollowButton()}
+            </Box>
+
             <Typography variant="h3" sx={{ 
               fontWeight: 700,
               mb: 1,
@@ -142,6 +252,24 @@ const ProfilePage: React.FC = () => {
             />
 
             <Grid container spacing={2} sx={{ mt: 2, justifyContent: 'center' }}>
+              <Grid item>
+                <Chip
+                  icon={<People fontSize="small" />}
+                  label={`${user?.followers_count} Followers`}
+                  variant="outlined"
+                  clickable
+                  onClick={() => setActiveTab('followers')}
+                />
+              </Grid>
+              <Grid item>
+                <Chip
+                  icon={<People fontSize="small" />}
+                  label={`${user?.following_count} Following`}
+                  variant="outlined"
+                  clickable
+                  onClick={() => setActiveTab('following')}
+                />
+              </Grid>
               <Grid item>
                 <Chip
                   icon={<DateRange fontSize="small" />}
@@ -205,18 +333,76 @@ const ProfilePage: React.FC = () => {
                 iconPosition="start"
                 sx={{ py: 2, fontSize: 16 }}
               />
+              <Tab 
+                label="Followers" 
+                value="followers"
+                icon={<People />}
+                iconPosition="start"
+                sx={{ py: 2, fontSize: 16 }}
+              />
+              <Tab 
+                label="Following" 
+                value="following"
+                icon={<People />}
+                iconPosition="start"
+                sx={{ py: 2, fontSize: 16 }}
+              />
             </Tabs>
           </Paper>
 
           {/* Content Sections */}
+          {activeTab === 'followers' && (
+            <List sx={{ width: '100%' }}>
+              {followers.map(follower => (
+                <ListItem key={follower.id} sx={{ py: 2 }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                      {follower.name?.[0] || follower.username[0]}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={follower.name || follower.username}
+                    secondary={`@${follower.username}`}
+                  />
+                </ListItem>
+              ))}
+              {followers.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
+                  <People sx={{ fontSize: 64, mb: 2 }} />
+                  <Typography variant="h6">No followers yet</Typography>
+                </Box>
+              )}
+            </List>
+          )}
+
+          {activeTab === 'following' && (
+            <List sx={{ width: '100%' }}>
+              {following.map(user => (
+                <ListItem key={user.id} sx={{ py: 2 }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                      {user.name?.[0] || user.username[0]}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={user.name || user.username}
+                    secondary={`@${user.username}`}
+                  />
+                </ListItem>
+              ))}
+              {following.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
+                  <People sx={{ fontSize: 64, mb: 2 }} />
+                  <Typography variant="h6">Not following anyone yet</Typography>
+                </Box>
+              )}
+            </List>
+          )}
+
           <Box sx={{ 
             display: 'grid',
             gap: 3,
-            gridTemplateColumns: { md: 'repeat(2, 1fr)' },
-            '&:hover > :not(:hover)': {
-              opacity: 0.8,
-              transition: 'opacity 0.3s ease'
-            }
+            gridTemplateColumns: { md: 'repeat(2, 1fr)' }
           }}>
             {activeTab === 'posts' && user?.forum_threads?.map(thread => (
               <Card
@@ -234,12 +420,8 @@ const ProfilePage: React.FC = () => {
                 <CardContent>
                   <Typography variant="h6" sx={{ 
                     fontWeight: 600,
-                    mb: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
+                    mb: 1
                   }}>
-                    {/* <EditIcon color="primary" fontSize="small" /> */}
                     {thread.title}
                   </Typography>
                   
@@ -278,7 +460,7 @@ const ProfilePage: React.FC = () => {
             {activeTab === 'comments' && user?.comments?.map(comment => (
               <Card
                 key={comment.id}
-                onClick={() => navigate(`/forum_threads/${comment.forum_thread_id}`)}
+                onClick={() => navigate(`/forum_threads/${comment.thread_id}`)}
                 sx={{
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
@@ -325,45 +507,38 @@ const ProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
             ))}
+
+            {/* Empty States */}
+            {activeTab === 'posts' && user?.forum_threads?.length === 0 && (
+              <Box sx={{ 
+                textAlign: 'center', 
+                py: 8,
+                color: 'text.secondary'
+              }}>
+                <EditIcon sx={{ fontSize: 64, mb: 2 }} />
+                <Typography variant="h6">
+                  No posts created yet
+                </Typography>
+              </Box>
+            )}
+
+            {activeTab === 'comments' && user?.comments?.length === 0 && (
+              <Box sx={{ 
+                textAlign: 'center', 
+                py: 8,
+                color: 'text.secondary'
+              }}>
+                <CommentIcon sx={{ fontSize: 64, mb: 2 }} />
+                <Typography variant="h6">
+                  No comments yet
+                </Typography>
+              </Box>
+            )}
           </Box>
-
-          {/* Empty States */}
-          {activeTab === 'posts' && user?.forum_threads?.length === 0 && (
-            <Box sx={{ 
-              textAlign: 'center', 
-              py: 8,
-              color: 'text.secondary'
-            }}>
-              <EditIcon sx={{ fontSize: 64, mb: 2 }} />
-              <Typography variant="h6">
-                No posts created yet
-              </Typography>
-              <Typography>
-                Start sharing your thoughts with the community!
-              </Typography>
-            </Box>
-          )}
-
-          {activeTab === 'comments' && user?.comments?.length === 0 && (
-            <Box sx={{ 
-              textAlign: 'center', 
-              py: 8,
-              color: 'text.secondary'
-            }}>
-              <CommentIcon sx={{ fontSize: 64, mb: 2 }} />
-              <Typography variant="h6">
-                No comments yet
-              </Typography>
-              <Typography>
-                Engage with the community by joining conversations
-              </Typography>
-            </Box>
-          )}
         </Box>
       </Box>
     </>
   );
 };
-
 
 export default ProfilePage;

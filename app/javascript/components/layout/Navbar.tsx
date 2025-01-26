@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   isLoggedIn: boolean;
@@ -8,6 +9,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -66,8 +68,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
           <Button href="/categories" color="inherit" sx={{ textTransform: "none" }}>
             Categories
           </Button>
-          <Button href="/tags" color="inherit" sx={{ textTransform: "none" }}>
-            Tags
+          <Button href="/explore" color="inherit" sx={{ textTransform: "none" }}>
+            Explore
           </Button>
         </Box>
 
@@ -89,8 +91,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn, onLogout }) => {
                 sx={{     boxShadow: "none"
                 }}
               >
-                <MenuItem onClick={handleMenuClose}>Profile Settings</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Account Settings</MenuItem>
+                <MenuItem onClick={() => navigate("/profile")}>My Profile</MenuItem>
+                <MenuItem onClick={() => navigate("/settings")}>Account Settings</MenuItem>
                 <MenuItem sx = {{color:"red"}} onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </>

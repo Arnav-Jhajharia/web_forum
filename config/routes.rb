@@ -5,6 +5,8 @@ Rails.application.routes.draw do
       post "auth/login", to: "auth#login"
       delete "auth/logout", to: "auth#logout"
 
+      get "forum_threads", to: "forum_threads#all_threads"
+
       # Categories
       resources :categories, only: [:index, :show, :create] do
         # Nested routes for threads under categories
@@ -30,7 +32,18 @@ Rails.application.routes.draw do
       get "feed", to: "feed#index"
 
       # User profile
-      resource :user, only: [:show, :update, :destroy]
+      get 'user', to: 'users#show'
+      put 'user', to: 'users#update'
+      delete 'user', to: 'users#destroy'
+
+      resources :users, only: [:show] do
+        member do
+          get :followers
+          get :following
+          post :follow
+          delete :unfollow
+        end
+      end
     end
   end
 

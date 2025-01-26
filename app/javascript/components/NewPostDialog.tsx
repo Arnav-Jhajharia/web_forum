@@ -219,7 +219,7 @@ const NewPostDialog = ({ open, onClose }) => {
 
           {/* Category Selection */}
           <FormControl fullWidth>
-            <InputLabel>Choose a Vibe</InputLabel>
+            <InputLabel>Choose a Category</InputLabel>
             <Select
               value={formData.category_id}
               onChange={(e) =>

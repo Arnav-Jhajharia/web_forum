@@ -1,7 +1,12 @@
 class Api::V1::ForumThreadsController < ApplicationController
   before_action :authenticate_user!, except: [:index]
   before_action :set_forum_thread, only: [:update, :show, :destroy, :toggle_like, :toggle_chill]
+  
+  def all_threads
+    threads = ForumThread.includes(:user, :category, :reactions).order(created_at: :desc)
 
+    render json: threads.map { |thread| forum_thread_data(thread) }
+  end
   # GET /forum_threads
   def index
     category = Category.find(params[:category_id])

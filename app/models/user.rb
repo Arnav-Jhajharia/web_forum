@@ -16,6 +16,26 @@ class User < ApplicationRecord
   store_accessor :preferences, :categories, :tags, :notifications
   before_save :set_default_preferences
 
+  # Follow relationships
+  has_many :follows_as_follower, class_name: 'Follow', foreign_key: 'follower_id', dependent: :destroy
+  has_many :follows_as_followed, class_name: 'Follow', foreign_key: 'followed_user_id', dependent: :destroy
+  
+  has_many :following, through: :follows_as_follower, source: :followed_user
+  has_many :followers, through: :follows_as_followed, source: :follower
+
+
+  def followers_count
+    followers.count
+  end
+
+  def following_count
+    following.count
+  end
+
+  def following?(user)
+    following.include?(user)
+  end
+
   private
 
   def set_default_preferences

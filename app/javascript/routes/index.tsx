@@ -8,7 +8,7 @@ import ThreadPage from "../pages/ThreadPage";
 import CategoriesPage from '../pages/Categories';
 import CategoryDetailsPage from '../pages/CategoryDetails';
 import ProfilePage from "../pages/Profile"
-
+import ExplorePage from "../pages/ExplorePage";
 
 interface AppRoutesProps {
   token: string | null;
@@ -59,6 +59,14 @@ const AppRoutes: React.FC<AppRoutesProps> = ({ token, setToken, logout }) => {
       <Route path="/profile" 
          element={token ? <ProfilePage /> : <Navigate to="/login" />} />
         
+
+      <Route path="/users/:userId" 
+         element={token ? <ProfilePage /> : <Navigate to="/login" />} /> 
+
+
+      <Route path="/explore" 
+      element={token ? <ExplorePage /> : <Navigate to="/login" />} /> 
+
       </Routes>
   );
 };

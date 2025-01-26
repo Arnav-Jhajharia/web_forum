@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Box,
@@ -10,20 +10,16 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Button,
   SpeedDial,
   SpeedDialAction,
 } from '@mui/material';
-import { ArrowBack, Search, Favorite, FavoriteBorder, Spa } from '@mui/icons-material';
+import { Search, Favorite, FavoriteBorder, Spa, ChatBubbleOutline } from '@mui/icons-material';
 import Navbar from '../components/layout/Navbar';
+import NewPostDialog from '../components/NewPostDialog';
+import NewCategoryDialog from '../components/NewCategoryDialog';
 import AddIcon from '@mui/icons-material/Add';
 import CategoryIcon from '@mui/icons-material/Category';
 import ForumIcon from '@mui/icons-material/Forum';
-
-import NewPostDialog from '../components/NewPostDialog';
-import NewCategoryDialog from '../components/NewCategoryDialog';
-
-
 
 interface ForumThread {
   id: number;
@@ -43,52 +39,42 @@ interface ForumThread {
   user_chilled: boolean;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
-
 const moodColors: Record<string, string> = {
   chill: '#88c0d0',
   excited: '#bf616a',
   curious: '#ebcb8b',
   supportive: '#a3be8c',
-  casual: '#d08770'
+  casual: '#d08770',
 };
 
-const CategoryDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [category, setCategory] = useState<Category | null>(null);
+const ExplorePage: React.FC = () => {
   const [threads, setThreads] = useState<ForumThread[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const [newPostOpen, setNewPostOpen] = useState(false);
   const [newCategoryOpen, setNewCategoryOpen] = useState(false);
 
   useEffect(() => {
-    const fetchCategoryData = async () => {
+    const fetchThreads = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`/api/v1/categories/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await axios.get('/api/v1/forum_threads', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        
-        setCategory(res.data.category);
-        setThreads(res.data.forum_threads);
+        setThreads(res.data);
       } catch (err) {
-        console.error('Error fetching category:', err);
-        setError('Failed to load category data');
+        console.error('Error fetching threads:', err);
+        setError('Failed to load threads.');
       } finally {
         setLoading(false);
       }
     };
-    fetchCategoryData();
-  }, [id]);
+
+    fetchThreads();
+  }, []);
 
   const handleLike = async (threadId: number) => {
     try {
@@ -98,12 +84,11 @@ const CategoryDetailPage: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      setThreads(prev => prev.map(t => 
-        t.id === threadId ? { ...t, ...res.data } : t
-      ));
+      setThreads((prev) =>
+        prev.map((t) => (t.id === threadId ? { ...t, ...res.data } : t))
+      );
     } catch (err) {
-      console.error('Error toggling like:', err);
+      console.error('Error liking thread:', err);
     }
   };
 
@@ -115,18 +100,18 @@ const CategoryDetailPage: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      setThreads(prev => prev.map(t => 
-        t.id === threadId ? { ...t, ...res.data } : t
-      ));
+      setThreads((prev) =>
+        prev.map((t) => (t.id === threadId ? { ...t, ...res.data } : t))
+      );
     } catch (err) {
-      console.error('Error toggling chill:', err);
+      console.error('Error chill-voting thread:', err);
     }
   };
 
-  const filteredThreads = threads.filter(thread =>
-    thread.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    thread.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredThreads = threads.filter(
+    (thread) =>
+      thread.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      thread.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -148,31 +133,15 @@ const CategoryDetailPage: React.FC = () => {
   return (
     <>
       <Navbar isLoggedIn onLogout={() => navigate('/login')} />
-      
       <Box sx={{ p: 4 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => navigate('/categories')}
-          sx={{ mb: 4 }}
-        >
-          Back to Categories
-        </Button>
-
-        {category && (
-          <Box sx={{ mb: 6 }}>
-            <Typography variant="h3" sx={{ mb: 2, fontWeight: 'bold' }}>
-              {category.name}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: '800px' }}>
-              {category.description || 'No description available'}
-            </Typography>
-          </Box>
-        )}
+        <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold' }}>
+          Explore Threads
+        </Typography>
 
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Search threads in this category..."
+          placeholder="Search threads..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{ mb: 4 }}
@@ -187,7 +156,7 @@ const CategoryDetailPage: React.FC = () => {
 
         {filteredThreads.length === 0 ? (
           <Typography variant="body1" sx={{ textAlign: 'center', color: 'text.secondary' }}>
-            No threads found{searchQuery ? ' matching your search' : ' in this category'}
+            No threads found{searchQuery ? ' matching your search' : ''}.
           </Typography>
         ) : (
           filteredThreads.map((thread) => {
@@ -201,7 +170,7 @@ const CategoryDetailPage: React.FC = () => {
                   boxShadow: '0 4px 8px rgba(0,0,0,0.08)',
                   borderLeft: `6px solid ${moodColor}`,
                   cursor: 'pointer',
-                  '&:hover': { transform: 'translateY(-2px)', transition: 'transform 0.2s' }
+                  '&:hover': { transform: 'translateY(-2px)', transition: 'transform 0.2s' },
                 }}
                 onClick={() => navigate(`/forum_threads/${thread.id}`)}
               >
@@ -216,7 +185,7 @@ const CategoryDetailPage: React.FC = () => {
                     {thread.content}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <IconButton
                         onClick={(e) => {
@@ -244,9 +213,8 @@ const CategoryDetailPage: React.FC = () => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {new Date(thread.created_at).toLocaleDateString()}
-                      </Typography>
+                      <ChatBubbleOutline />
+                      <Typography>{thread.comments_count}</Typography>
                     </Box>
                   </Box>
                 </CardContent>
@@ -255,6 +223,7 @@ const CategoryDetailPage: React.FC = () => {
           })
         )}
       </Box>
+
       <SpeedDial
         ariaLabel="Create new items"
         sx={{ position: 'fixed', bottom: 24, right: 24 }}
@@ -283,4 +252,4 @@ const CategoryDetailPage: React.FC = () => {
   );
 };
 
-export default CategoryDetailPage;
+export default ExplorePage;
