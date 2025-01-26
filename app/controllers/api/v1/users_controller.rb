@@ -8,7 +8,7 @@ module Api
         user = params[:id] ? User.find(params[:id]) : User.find(current_user.id)
 
         render json: user.as_json(
-          only: [:id, :name, :username, :email, :bio, :created_at],
+          only: [:id, :name, :username, :email, :bio, :created_a, :preferences],
           methods: [:followers_count, :following_count],
           include: {
             forum_threads: { 

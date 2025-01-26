@@ -122,8 +122,13 @@ class Api::V1::ForumThreadsController < ApplicationController
       "user_chilled" => user_chilled,
       "comments_count" => thread.comments.count,
       "category" => thread.category.as_json(only: [:id, :name, :description]),
-      "mood" => thread.mood
+      "mood" => thread.mood,
+      "tags" => thread.tags.map { |tag| { id: tag.id, name: tag.name } }
     })
+  end
+
+  def forum_thread_params
+    params.require(:forum_thread).permit(:title, :content, :mood, :category_id, :tag_list)
   end
 
   def format_comments(comments)
