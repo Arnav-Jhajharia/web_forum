@@ -3,7 +3,7 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
     allow do
       # Replace with your frontend's origin
-      origins 'https://web-forum-frontend-ele42p4ef-arnav-jhajharias-projects.vercel.app'
+      origins 'https://web-forum-frontend.vercel.app'
   
       resource '*',
         headers: :any,
