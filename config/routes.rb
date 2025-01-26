@@ -34,6 +34,8 @@ Rails.application.routes.draw do
       # User profile
       get 'user', to: 'users#show'
       put 'user', to: 'users#update'
+      patch 'user', to: 'users#update'
+
       delete 'user', to: 'users#destroy'
 
       resources :users, only: [:show] do
