@@ -17,7 +17,7 @@ services:
         fromDatabase:
           name: web_forum
           property: connectionString
-      - key: d339f699f545b4aa777a177e19811f57
+      - key: RAILS_MASTER_KEY
         sync: false
-      - key: 2
+      - key: WEB_CONCURRENCY
         value: 2 # sensible default
